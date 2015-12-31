@@ -22,26 +22,6 @@ bool loadImage(Mat& img, string filename) {
 void convertImageToGrayScale(Mat& img) {
     cvtColor(img, img, COLOR_BGR2GRAY);
 }
-/*
-int main(int argc, char** argv)
-{
-    string imgName("img.png");
-    if(argc > 1) {
-        imgName = argv[1];
-    }
-
-    Mat img;
-    if(!loadImage(img, imgName)) {
-        return -1;
-    }
-    convertImageToGrayScale(img);
-
-    namedWindow("Bionic Eye", WINDOW_AUTOSIZE);
-    imshow("Bionic Eye", img);
-
-    waitKey(0);
-    return 0;
-}*/
 
 void reduceImage(Mat& img, int angle, double scale) {
     int w(img.cols * angle / 100),
@@ -164,12 +144,12 @@ int main() {
         return -1;
     }
 
-    string windowName("Modified picture");
-    namedWindow(windowName, WINDOW_AUTOSIZE);
-    string paramsName("Initial picture");
-    namedWindow(paramsName, WINDOW_AUTOSIZE);
-    string reduceName("Reduced picture");
-    namedWindow(reduceName, WINDOW_AUTOSIZE);
+    string modifiedWindow("Modified picture");
+    namedWindow(modifiedWindow, WINDOW_AUTOSIZE);
+    string initialWindow("Initial picture");
+    namedWindow(initialWindow, WINDOW_AUTOSIZE);
+    string reduceWindow("Reduced picture");
+    namedWindow(reduceWindow, WINDOW_AUTOSIZE);
     Mat frame;
     webcam.read(frame);
     int height(frame.size().height);
@@ -180,18 +160,16 @@ int main() {
     int zoom(1); //time to extend the final picture
 
     //Add some trackbars
-    createTrackbar("width", paramsName, &electrodes_width, width);
-    createTrackbar("height", paramsName, &electrodes_height, height);
-    createTrackbar("angle (%)", paramsName, &angle, 100);
-    createTrackbar("zoom", paramsName, &zoom, 20);
+    createTrackbar("width", initialWindow, &electrodes_width, width);
+    createTrackbar("height", initialWindow, &electrodes_height, height);
+    createTrackbar("angle (%)", initialWindow, &angle, 100);
+    createTrackbar("zoom", initialWindow, &zoom, 20);
 
     bool carryOn(true);
 
     while(carryOn) {
-        //1 - Get picture
-        webcam.read(frame);
-        imshow(paramsName, frame);
 
+        //Input handling
         switch((char)waitKey(1)) {
             case 27:
                 carryOn = false;
@@ -200,12 +178,16 @@ int main() {
             default: break;
         }
 
+        //1 - Get picture
+        webcam.read(frame);
+        imshow(initialWindow, frame);
+
         //2 - Convert to grayscale
         convertImageToGrayScale(frame);
 
         //3 - Reduce to get less information
         reduceImage(frame, angle, (double)electrodes_height / (double)electrodes_width);
-        imshow(reduceName, frame);
+        imshow(reduceWindow, frame);
 
         //4 - Reduce against in electrodes_heigth * electrodes_width
         pixeliseImage(frame, electrodes_width, electrodes_height);
@@ -217,7 +199,7 @@ int main() {
         extendImage(frame, zoom);
 
         //Show image
-        imshow(windowName, frame);
+        imshow(modifiedWindow, frame);
     }
 
     return 0;
