@@ -71,6 +71,7 @@ void pixeliseImage(Mat& img, int electrodes_w, int electrodes_h) {
         cout << "Too more channels. Channel expected 1." << endl;
         return;
     }
+
     if(electrodes_w == 0) {
         electrodes_w = 1;
     } else if(electrodes_w > img.cols) {
@@ -81,7 +82,6 @@ void pixeliseImage(Mat& img, int electrodes_w, int electrodes_h) {
     } else if(electrodes_h > img.rows) {
         electrodes_h = img.rows;
     }
-
 
     Mat finalImg(electrodes_h, electrodes_w, CV_8UC1);
     int blockW(img.cols / electrodes_w),
@@ -111,16 +111,47 @@ void pixeliseImage(Mat& img, int electrodes_w, int electrodes_h) {
                 }
             }
 
-            int average(sum / (blockH * blockW));
+            uchar average(sum / (blockH * blockW));
 
             //Put this color in the target picture !
             finalImg.ptr<uchar>(y)[x] = average;
-
         }
     }
 
     img = finalImg;
-    //rectangle(img, Point(0, 0), Point(50, 50), Scalar(126), CV_FILLED);
+}
+
+//Reverse the mat send in argument (like if you look in a spoon)
+void reverseImage(Mat& img) {
+    //Temporary matrix
+    Mat finalImg(img.rows, img.cols, CV_8UC1);
+
+    //The top-left corner pixel go the right-bottom corner
+    for(int y(0); y < img.rows; ++y) {
+        uchar* p = img.ptr<uchar>(y);
+        for(int x(0); x < img.cols; ++x) {
+            finalImg.ptr<uchar>(img.rows - y - 1)[img.cols - x - 1] = p[x];
+        }
+    }
+
+    img = finalImg;
+}
+
+void extendImage(Mat& img, int zoom) {
+    if(zoom <= 0) {
+        zoom = 1;
+    }
+
+    Mat finalImg(img.rows * zoom, img.cols * zoom, CV_8UC1);
+
+    for(int y(0); y < img.rows; ++y) {
+        uchar* p = img.ptr<uchar>(y);
+        for(int x(0); x < img.cols; ++x) {
+            rectangle(finalImg, Point(x * zoom, y * zoom), Point((x + 1) * zoom, (y + 1) * zoom), Scalar(p[x]), CV_FILLED);
+        }
+    }
+
+    img = finalImg;
 }
 
 int main() {
@@ -137,6 +168,8 @@ int main() {
     namedWindow(windowName, WINDOW_AUTOSIZE);
     string paramsName("Initial picture");
     namedWindow(paramsName, WINDOW_AUTOSIZE);
+    string reduceName("Reduced picture");
+    namedWindow(reduceName, WINDOW_AUTOSIZE);
     Mat frame;
     webcam.read(frame);
     int height(frame.size().height);
@@ -144,11 +177,13 @@ int main() {
     int electrodes_width(10); //Number of electrodes
     int electrodes_height(6);
     int angle(100); //Percentage of the width of the initial picture which will be used
+    int zoom(1); //time to extend the final picture
 
     //Add some trackbars
-    createTrackbar("electrodes width", paramsName, &electrodes_width, width);
-    createTrackbar("electrodes height", paramsName, &electrodes_height, height);
+    createTrackbar("width", paramsName, &electrodes_width, width);
+    createTrackbar("height", paramsName, &electrodes_height, height);
     createTrackbar("angle (%)", paramsName, &angle, 100);
+    createTrackbar("zoom", paramsName, &zoom, 20);
 
     bool carryOn(true);
 
@@ -170,9 +205,16 @@ int main() {
 
         //3 - Reduce to get less information
         reduceImage(frame, angle, (double)electrodes_height / (double)electrodes_width);
+        imshow(reduceName, frame);
 
         //4 - Reduce against in electrodes_heigth * electrodes_width
-        pixeliseImage(frame, electrodes_height, electrodes_width);
+        pixeliseImage(frame, electrodes_width, electrodes_height);
+
+        //5 - Reverse the picture
+        reverseImage(frame);
+
+        //Extend the picture because some times, it's to small
+        extendImage(frame, zoom);
 
         //Show image
         imshow(windowName, frame);
