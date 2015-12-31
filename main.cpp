@@ -134,6 +134,11 @@ void extendImage(Mat& img, int zoom) {
     img = finalImg;
 }
 
+void saveImage(string const& filename, Mat& img) {
+    imwrite(filename + ".jpg", img);
+    cout << "Saved as " + filename << ".jpg\n";
+}
+
 void useWebcam() {
     VideoCapture webcam;
 
@@ -186,32 +191,32 @@ void useWebcam() {
         webcam.read(frame);
         imshow(initialWindow, frame);
         if(mustSave) {
-            imwrite("1_initial.jpg", frame);
+            saveImage("1_initial", frame);
         }
 
         //2 - Convert to grayscale
         convertImageToGrayScale(frame);
         if(mustSave) {
-            imwrite("2_grayscale.jpg", frame);
+            saveImage("2_grayscale", frame);
         }
 
         //3 - Reduce to get less information
         reduceImage(frame, angle, (double)electrodes_height / (double)electrodes_width);
         imshow(reduceWindow, frame);
         if(mustSave) {
-            imwrite("3_reduce.jpg", frame);
+            saveImage("3_reduce", frame);
         }
 
         //4 - Reduce against in electrodes_heigth * electrodes_width
         pixeliseImage(frame, electrodes_width, electrodes_height);
         if(mustSave) {
-            imwrite("4_pixelise.jpg", frame);
+            saveImage("4_pixelise", frame);
         }
 
         //5 - Reverse the picture
         reverseImage(frame);
         if(mustSave) {
-            imwrite("5_reverse.jpg", frame);
+            saveImage("5_reverse", frame);
         }
 
         //Extend the picture because some times, it's to small
