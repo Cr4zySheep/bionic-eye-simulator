@@ -166,6 +166,7 @@ int main() {
     createTrackbar("zoom", initialWindow, &zoom, 20);
 
     bool carryOn(true);
+    bool mustSave(false);
 
     while(carryOn) {
 
@@ -175,31 +176,51 @@ int main() {
                 carryOn = false;
                 break;
 
+            case 115:
+                mustSave = true;
+                break;
+
             default: break;
         }
 
         //1 - Get picture
         webcam.read(frame);
         imshow(initialWindow, frame);
+        if(mustSave) {
+            imwrite("1_initial.jpg", frame);
+        }
 
         //2 - Convert to grayscale
         convertImageToGrayScale(frame);
+        if(mustSave) {
+            imwrite("2_grayscale.jpg", frame);
+        }
 
         //3 - Reduce to get less information
         reduceImage(frame, angle, (double)electrodes_height / (double)electrodes_width);
         imshow(reduceWindow, frame);
+        if(mustSave) {
+            imwrite("3_reduce.jpg", frame);
+        }
 
         //4 - Reduce against in electrodes_heigth * electrodes_width
         pixeliseImage(frame, electrodes_width, electrodes_height);
+        if(mustSave) {
+            imwrite("4_pixelise.jpg", frame);
+        }
 
         //5 - Reverse the picture
         reverseImage(frame);
+        if(mustSave) {
+            imwrite("5_reverse.jpg", frame);
+        }
 
         //Extend the picture because some times, it's to small
         extendImage(frame, zoom);
 
         //Show image
         imshow(modifiedWindow, frame);
+        mustSave = false;
     }
 
     return 0;
