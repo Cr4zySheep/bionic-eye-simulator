@@ -134,14 +134,14 @@ void extendImage(Mat& img, int zoom) {
     img = finalImg;
 }
 
-int main() {
+void useWebcam() {
     VideoCapture webcam;
 
     if(webcam.open(0)) {
         cout << "Great ! It works !" << endl;
     } else {
         cout << "Or not..." << endl;
-        return -1;
+        return;
     }
 
     string modifiedWindow("Modified picture");
@@ -169,7 +169,6 @@ int main() {
     bool mustSave(false);
 
     while(carryOn) {
-
         //Input handling
         switch((char)waitKey(1)) {
             case 27:
@@ -221,6 +220,35 @@ int main() {
         //Show image
         imshow(modifiedWindow, frame);
         mustSave = false;
+    }
+
+    destroyAllWindows();
+}
+
+void useFile() {
+}
+
+int main() {
+    bool quit(false);
+    while(!quit) {
+        cout << "What do you want to use ?\n";
+        cout << "1 - your webcam\n";
+        cout << "2 - a local picture\n";
+        cout << "3 - quit\n\n";
+        cout << "Enter 1 or 2 or 3 and then press enter\n\n";
+        string input("");
+        getline(cin, input);
+
+        if(!input.empty()) {
+            if(input[0] == '1') {
+                useWebcam();
+            } else if(input[0] == '2') {
+                useFile();
+            } else if(input[0] == '3') {
+                quit = true;
+            }
+        }
+        cout << "\n\n";
     }
 
     return 0;
