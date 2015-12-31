@@ -226,6 +226,83 @@ void useWebcam() {
 }
 
 void useFile() {
+    string filename("");
+    cout << "Filename : ";
+    getline(cin, filename);
+
+    Mat img;
+
+    //Check if errors
+    if(!loadImage(img, filename)) {
+        return;
+    }
+
+    cout << "Load successful !\n\n";
+
+    //Display initial picture
+    namedWindow("initial picture", WINDOW_AUTOSIZE);
+    imshow("initial picture", img);
+    waitKey(0); //Wait before next step
+    destroyWindow("initial picture");
+
+    //Display grayscale picture
+    namedWindow("grayscale picture", WINDOW_AUTOSIZE);
+    convertImageToGrayScale(img);
+    imshow("grayscale picture", img);
+    waitKey(0); //Wait before next step
+    destroyWindow("grayscale picture");
+
+    //Display reduce picture
+    string window("before reduce picture"), window2("after reduce picture");
+    namedWindow(window, WINDOW_AUTOSIZE);
+    int angle(100),
+        electrodes_width(10), electrodes_height(6),
+        width(img.size().width), height(img.size().height);
+    Mat baseImg;
+    img.copyTo(baseImg);
+    createTrackbar("angle (%)", window, &angle, 100);
+    createTrackbar("width", window, &electrodes_width, width);
+    createTrackbar("height", window, &electrodes_height, height);
+    while(static_cast<char>(waitKey(1)) != 13) {
+        baseImg.copyTo(img);
+
+        reduceImage(img, angle, (double)electrodes_height / (double)electrodes_width);
+
+        imshow(window, baseImg);
+        imshow(window2, img);
+    }
+    destroyWindow(window);
+    destroyWindow(window2);
+
+    //Display pixelise picture
+    window = "before pixelise picture";
+    window2 = "after pixelise picture";
+    namedWindow(window, WINDOW_AUTOSIZE);
+    Mat zoomImg;
+    img.copyTo(baseImg);
+    int zoom(1);
+    createTrackbar("zoom", window, &zoom, 20);
+    while(static_cast<char>(waitKey(1)) != 13) {
+        baseImg.copyTo(img);
+
+        pixeliseImage(img, electrodes_width, electrodes_height);
+
+        img.copyTo(zoomImg);
+        extendImage(zoomImg, zoom);
+
+        imshow(window, baseImg);
+        imshow(window2, zoomImg);
+    }
+    destroyWindow(window);
+    destroyWindow(window2);
+
+    //Display reverse picture
+    namedWindow("reverse picture", WINDOW_AUTOSIZE);
+    reverseImage(img);
+    extendImage(img, zoom);
+    imshow("reverse picture", img);
+    waitKey(0); //Wait before next step
+    destroyWindow("reverse picture");
 }
 
 int main() {
