@@ -256,6 +256,7 @@ void useFile() {
     imshow("grayscale picture", img);
     waitKey(0); //Wait before next step
     destroyWindow("grayscale picture");
+    saveImage("1_grayscale", img);
 
     //Display reduce picture
     string window("before reduce picture"), window2("after reduce picture");
@@ -278,6 +279,7 @@ void useFile() {
     }
     destroyWindow(window);
     destroyWindow(window2);
+    saveImage("2_reduce", img);
 
     //Display pixelise picture
     window = "before pixelise picture";
@@ -300,10 +302,12 @@ void useFile() {
     }
     destroyWindow(window);
     destroyWindow(window2);
+    saveImage("3_pixelise", img);
 
     //Display reverse picture
     namedWindow("reverse picture", WINDOW_AUTOSIZE);
     reverseImage(img);
+    saveImage("4_reverse", img);
     extendImage(img, zoom);
     imshow("reverse picture", img);
     waitKey(0); //Wait before next step
